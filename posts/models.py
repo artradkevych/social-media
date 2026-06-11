@@ -9,7 +9,8 @@ from users.models import Profile
 def create_custom_path(instance, filename):
     _, extension = os.path.splitext(filename)
     return os.path.join(
-        "uploads/posts/",
+        "uploads",
+        "posts",
         f"post_{uuid.uuid4()}{extension}",
     )
 

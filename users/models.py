@@ -57,7 +57,8 @@ class User(AbstractUser):
 def create_custom_path(instance, filename):
     _, extension = os.path.splitext(filename)
     return os.path.join(
-        "uploads/profiles/",
+        "uploads",
+        "profiles",
         f"user_{instance.user_id}-{uuid.uuid4()}{extension}",
     )
 
