@@ -63,9 +63,14 @@ class PostListSerializer(serializers.ModelSerializer):
             "is_liked",
         )
 
-    def get_is_liked(self, obj: Post) -> bool:
+    def get_is_liked(self, obj):
         request = self.context.get("request")
-        profile = getattr(request.user, "profile", None)
+        if not request:
+            return False
+        user = getattr(request, "user", None)
+        if not user or not user.is_authenticated:
+            return False
+        profile = getattr(user, "profile", None)
         if not profile:
             return False
         return obj.liked_by.filter(id=profile.id).exists()
