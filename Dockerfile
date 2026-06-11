@@ -1,17 +1,21 @@
-FROM python:3.13-slim
+FROM python:3.14-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-WORKDIR /app
+WORKDIR app/
 
-COPY requirements.txt .
-
-RUN pip install --no-cache-dir --upgrade pip &&  \
-    pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
 
 COPY . .
+RUN mkdir -p /files/media/
 
-EXPOSE 8000
+RUN adduser \
+        --disabled-password \
+        --no-create-home \
+        django-user
 
-CMD sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+RUN chown -R django-user:django-user /files/media/
+RUN chmod -R 755 /files/media/
+
+USER django-user

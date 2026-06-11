@@ -1,9 +1,15 @@
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv()
 
-SECRET_KEY = "django-insecure--=re++kur$quns8v*ueki(5c2v=q!)x9hnpqf2qutjgngu6-j8"
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY", "django-insecure--=re++kur$quns8v*ueki(5c2v=q!)x9hnpqf2qutjgngu6-j8"
+)
 
 DEBUG = True
 
@@ -56,8 +62,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+        "NAME": os.environ.get("POSTGRES_DB", "social-media"),
+        "USER": os.environ.get("POSTGRES_USER", "postgres"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "password"),
+        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
     }
 }
 
@@ -88,8 +98,8 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+MEDIA_ROOT = "/files/media/"
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media/"
 
 AUTH_USER_MODEL = "users.User"
 
