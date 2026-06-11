@@ -1,12 +1,40 @@
 from typing import Dict, Any
 
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.db import transaction
 from rest_framework import serializers
 
 from users.models import Profile
 
 User = get_user_model()
+
+
+class CustomAuthTokenSerializer(serializers.Serializer):
+    email = serializers.EmailField(label="Email", write_only=True)
+    password = serializers.CharField(
+        label="Password",
+        style={"input_type": "password"},
+        trim_whitespace=False,
+        write_only=True,
+    )
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        email = attrs.get("email")
+        password = attrs.get("password")
+        if email and password:
+            user = authenticate(
+                request=self.context.get("request"), username=email, password=password
+            )
+            if not user:
+                raise serializers.ValidationError(
+                    "Unable to log in with provided credentials.", code="authorization"
+                )
+        else:
+            raise serializers.ValidationError(
+                "Must include 'email' and 'password'.", code="authorization"
+            )
+        attrs["user"] = user
+        return attrs
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -1,6 +1,5 @@
-from typing import Dict, Any, Type, Optional
+from typing import Type, Optional
 
-from django.contrib.auth import authenticate
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, viewsets, status, mixins, filters
 from rest_framework import serializers
@@ -19,35 +18,8 @@ from users.serializers import (
     ProfileListSerializer,
     ProfileWriteSerializer,
     RegisterSerializer,
+    CustomAuthTokenSerializer,
 )
-
-
-class CustomAuthTokenSerializer(serializers.Serializer):
-    email = serializers.EmailField(label="Email", write_only=True)
-    password = serializers.CharField(
-        label="Password",
-        style={"input_type": "password"},
-        trim_whitespace=False,
-        write_only=True,
-    )
-
-    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
-        email = attrs.get("email")
-        password = attrs.get("password")
-        if email and password:
-            user = authenticate(
-                request=self.context.get("request"), username=email, password=password
-            )
-            if not user:
-                raise serializers.ValidationError(
-                    "Unable to log in with provided credentials.", code="authorization"
-                )
-        else:
-            raise serializers.ValidationError(
-                "Must include 'email' and 'password'.", code="authorization"
-            )
-        attrs["user"] = user
-        return attrs
 
 
 @extend_schema(
