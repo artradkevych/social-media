@@ -1,3 +1,5 @@
+from typing import Dict, Any, Type, Optional
+
 from django.contrib.auth import authenticate
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import generics, viewsets, status, mixins, filters
@@ -29,7 +31,7 @@ class CustomAuthTokenSerializer(serializers.Serializer):
         write_only=True,
     )
 
-    def validate(self, attrs):
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         email = attrs.get("email")
         password = attrs.get("password")
         if email and password:
@@ -65,7 +67,7 @@ class LoginView(ObtainAuthToken):
     serializer_class = CustomAuthTokenSerializer
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs) -> Response:
         serializer = self.serializer_class(
             data=request.data, context={"request": request}
         )
@@ -79,7 +81,7 @@ class LoginView(ObtainAuthToken):
 class LogoutView(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def post(self, request):
+    def post(self, request) -> Response:
         request.user.auth_token.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -108,19 +110,19 @@ class ProfileViewSet(
     filter_backends = (filters.SearchFilter,)
     search_fields = ("user__username", "first_name", "last_name")
 
-    def get_permissions(self):
+    def get_permissions(self) -> list:
         if self.action in ("update", "partial_update", "destroy"):
             return [IsAuthenticated(), IsOwnerOrReadOnly()]
         return super().get_permissions()
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[serializers.Serializer]:
         if self.action == "list":
             return ProfileListSerializer
         if self.action in ("update", "partial_update"):
             return ProfileWriteSerializer
         return ProfileDetailSerializer
 
-    def perform_destroy(self, instance):
+    def perform_destroy(self, instance: Profile) -> None:
         instance.user.delete()
 
     @extend_schema(
@@ -129,7 +131,7 @@ class ProfileViewSet(
         responses={200: None, 201: None, 400: None},
     )
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
-    def follow(self, request, pk=None):
+    def follow(self, request, pk: Optional[int] = None) -> Response:
         target_profile = self.get_object()
         my_profile = request.user.profile
 

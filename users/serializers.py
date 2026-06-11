@@ -1,3 +1,5 @@
+from typing import Dict, Any
+
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import serializers
@@ -25,10 +27,10 @@ class UserSerializer(serializers.ModelSerializer):
             }
         }
 
-    def create(self, validated_data):
+    def create(self, validated_data: Dict[str, Any]) -> User:
         return get_user_model().objects.create_user(**validated_data)
 
-    def update(self, instance, validated_data):
+    def update(self, instance: User, validated_data: Dict[str, Any]) -> User:
         password = validated_data.pop("password", None)
         user = super().update(instance, validated_data)
         if password:
@@ -120,7 +122,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             "image",
         )
 
-    def create(self, validated_data):
+    def create(self, validated_data: Dict[str, Any]) -> Profile:
         user_data = validated_data.pop("user")
         with transaction.atomic():
             user_serializer = UserSerializer(data=user_data)

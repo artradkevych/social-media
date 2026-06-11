@@ -1,6 +1,7 @@
 import os
 import uuid
 from datetime import date
+from typing import Optional
 
 from django.contrib.auth.models import (
     AbstractUser,
@@ -15,7 +16,7 @@ class UserManager(BaseUserManager):
 
     use_in_migrations = True
 
-    def _create_user(self, email, password, **extra_fields):
+    def _create_user(self, email, password, **extra_fields) -> User:
         if not email:
             raise ValueError("The given email must be set")
         email = self.normalize_email(email)
@@ -24,12 +25,14 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(
+        self, email: str, password: Optional[str] = None, **extra_fields
+    ) -> User:
         extra_fields.setdefault("is_staff", False)
         extra_fields.setdefault("is_superuser", False)
         return self._create_user(email, password, **extra_fields)
 
-    def create_superuser(self, email, password, **extra_fields):
+    def create_superuser(self, email: str, password: str, **extra_fields) -> User:
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
 
@@ -50,11 +53,11 @@ class User(AbstractUser):
 
     objects = UserManager()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.email
 
 
-def create_custom_path(instance, filename):
+def create_custom_path(instance: Profile, filename: str) -> str:
     _, extension = os.path.splitext(filename)
     return os.path.join(
         "uploads",
@@ -77,14 +80,14 @@ class Profile(models.Model):
         "self", symmetrical=False, related_name="followers", blank=True
     )
 
-    def clean(self):
+    def clean(self) -> None:
         if self.birth_date:
             if self.birth_date > date.today():
                 raise ValidationError("Birth date cannot be in the future")
 
-    def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs) -> Optional[None]:
         self.full_clean()
         return super().save(*args, **kwargs)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"

@@ -6,7 +6,7 @@ from django.db import models
 from users.models import Profile
 
 
-def create_custom_path(instance, filename):
+def create_custom_path(instance: Post, filename: str) -> str:
     _, extension = os.path.splitext(filename)
     return os.path.join(
         "uploads",
@@ -18,7 +18,7 @@ def create_custom_path(instance, filename):
 class Tag(models.Model):
     name = models.CharField(max_length=75, unique=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -32,11 +32,11 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.text_preview
 
     @property
-    def text_preview(self):
+    def text_preview(self) -> str:
         if len(self.text) <= self.PREVIEW_LENGTH:
             return self.text
 
@@ -53,11 +53,11 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.text_preview
 
     @property
-    def text_preview(self):
+    def text_preview(self) -> str:
         if len(self.text) <= self.PREVIEW_LENGTH:
             return self.text
 

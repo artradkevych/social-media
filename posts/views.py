@@ -1,6 +1,8 @@
+from typing import Type
+
 from django.db import models
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
-from rest_framework import viewsets, status, filters, mixins
+from rest_framework import viewsets, status, filters, mixins, serializers
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -51,7 +53,7 @@ class PostViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ["tags__name", "text"]
 
-    def get_queryset(self):
+    def get_queryset(self) -> models.QuerySet:
         user = self.request.user
         queryset = Post.objects.select_related("author__user").prefetch_related(
             "tags", "liked_by__user", "comments__author__user"
@@ -80,19 +82,19 @@ class PostViewSet(viewsets.ModelViewSet):
             _likes_count=models.Count("liked_by", distinct=True)
         ).order_by("-created_at")
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Type[serializers.Serializer]:
         if self.action == "list":
             return PostListSerializer
         if self.action == "retrieve":
             return PostDetailSerializer
         return PostSerializer
 
-    def get_permissions(self):
+    def get_permissions(self) -> list:
         if self.action in ["update", "partial_update", "destroy"]:
             return [IsAuthenticated(), IsOwnerOrReadOnly()]
         return super().get_permissions()
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer: serializers.Serializer) -> None:
         serializer.save(author=self.request.user.profile)
 
 
@@ -121,17 +123,17 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = CommentSerializer
 
-    def get_queryset(self):
+    def get_queryset(self) -> models.QuerySet:
         return Comment.objects.filter(post_id=self.kwargs["post_pk"]).select_related(
             "author__user"
         )
 
-    def perform_create(self, serializer):
+    def perform_create(self, serializer: serializers.Serializer) -> None:
         serializer.save(
             author=self.request.user.profile, post_id=self.kwargs["post_pk"]
         )
 
-    def get_permissions(self):
+    def get_permissions(self) -> list:
         if self.action in ("update", "partial_update", "destroy"):
             return [IsAuthenticated(), IsOwnerOrReadOnly()]
         return super().get_permissions()
@@ -145,7 +147,7 @@ class LikeView(viewsets.ViewSet):
         description="Toggles like on a post. Returns 201 if liked, 200 if unliked. Cannot like your own post.",
         responses={200: None, 201: None, 400: None},
     )
-    def create(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs) -> Response:
         post = get_object_or_404(Post, pk=self.kwargs["post_pk"])
         profile = request.user.profile
 

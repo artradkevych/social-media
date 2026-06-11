@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from posts.models import Comment, Post, Tag
@@ -5,7 +7,7 @@ from users.serializers import ProfileListSerializer
 
 
 class CreatableSlugRelatedField(serializers.SlugRelatedField):
-    def to_internal_value(self, data):
+    def to_internal_value(self, data: Any) -> Any:
         queryset = self.get_queryset()
 
         try:
@@ -61,7 +63,7 @@ class PostListSerializer(serializers.ModelSerializer):
             "is_liked",
         )
 
-    def get_is_liked(self, obj):
+    def get_is_liked(self, obj: Post) -> bool:
         request = self.context.get("request")
         profile = getattr(request.user, "profile", None)
         if not profile:
