@@ -4,78 +4,79 @@ A RESTful API for a social media platform built with Django and Django REST Fram
 
 ## Getting Started
 
-### 1. Clone the repository
+### Local Development
 
+1. Clone the repository:
 ```bash
 git clone <your-repo-url>
 cd <project-folder>
 ```
 
-### 2. Create and activate a virtual environment
-
+2. Create virtual environment:
 ```bash
 python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# macOS / Linux
-source venv/bin/activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-### 3. Install dependencies
-
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Apply migrations
+4. Create `.env` file:
+```env
+SECRET_KEY=your-secret-key
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your-password
+POSTGRES_DB=social-media
+POSTGRES_HOST=localhost
+```
 
+5. Run migrations:
 ```bash
 python manage.py migrate
 ```
 
-### 5. Create a superuser (optional)
-
-```bash
-python manage.py createsuperuser
-```
-
-### 6. Run the development server
-
+6. Start server:
 ```bash
 python manage.py runserver
 ```
 
-## Run with Docker
+## Docker Compose
 
-Build image:
-
-```bash
-docker build -t social-media-api .
+1. Create `.env` file:
+```env
+POSTGRES_PASSWORD=social-media
+POSTGRES_USER=social-media
+POSTGRES_DB=social-media
+POSTGRES_HOST=db
+PGDATA=/var/lib/postgresql/data
+SECRET_KEY=your-secret-key
 ```
 
-Run container:
-
+2. Start application:
 ```bash
-docker run -p 8000:8000 social-media-api
+docker compose up --build
+```
+
+3. Stop application:
+```bash
+docker compose down
 ```
 
 ## Authentication
 
-The API uses **token-based authentication**.
-
-1. Register at `POST /api/users/register/`
-2. Login at `POST /api/users/login/` — you will receive a token
-3. Pass the token in the `Authorization` header for all protected endpoints:
+The API uses token-based authentication. Pass the token in the `Authorization` header:
 
 ```
 Authorization: Token <your-token>
 ```
 
-## API Documentation
+1. Register: `POST /api/users/register/`
+2. Login: `POST /api/users/login/` — receive token
+3. Use token for protected endpoints
 
-| UI | URL |
-|----|-----|
-| Swagger UI | http://127.0.0.1:8000/api/doc/swagger/ |
-| Redoc | http://127.0.0.1:8000/api/doc/redoc/ |
+## Documentation
+
+- Swagger UI: http://localhost:8000/api/doc/swagger/
+- ReDoc: http://localhost:8000/api/doc/redoc/
